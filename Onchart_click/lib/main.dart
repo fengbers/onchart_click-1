@@ -6,8 +6,9 @@ import 'package:flutter/rendering.dart';
 
 String? pointValue;
 String? pointValue2;
-
+Color? annotationColor;
 GlobalKey globalKey = GlobalKey<_CustomTextState>();
+GlobalKey annotationKey = GlobalKey<_CustomAnnotationState>();
 void main() {
   return runApp(MultipleAxesApp());
 }
@@ -43,7 +44,7 @@ class _MultipleAxes extends State<MultipleAxes> {
   ChartSeriesController? seriesController, seriesController1;
   Offset annotationPosition1 = Offset(0, 0);
   ChartData? hitPoint;
-  MaterialColor? color;
+
   @override
   void initState() {
     super.initState();
@@ -76,27 +77,8 @@ class _MultipleAxes extends State<MultipleAxes> {
               SfCartesianChart(
                 annotations: <CartesianChartAnnotation>[
                   CartesianChartAnnotation(
-                    widget: Container(
-                      width: 60,
-                      height: 55,
-                      color: color,
-                      child: Column(
-                        children: [
-                          Center(
-                              child: Text("x: " +
-                                  (hitPoint?.minutes.toStringAsFixed(1) ??
-                                      ""))),
-                          Center(
-                              child: Text("Y1: " +
-                                  (hitPoint?.valueY1.toStringAsFixed(1) ??
-                                      ""))),
-                          Center(
-                              child: Text("Y2: " +
-                                  (hitPoint?.valueY2.toStringAsFixed(1) ??
-                                      ""))),
-                        ],
-                      ),
-                    ),
+                    widget: CustomAnnotation(
+                        key: annotationKey,hitPoint:hitPoint),
                     coordinateUnit: CoordinateUnit.logicalPixel,
                     region: AnnotationRegion.chart,
                     x: annotationPosition1.dx, // x position of annotation
@@ -114,7 +96,7 @@ class _MultipleAxes extends State<MultipleAxes> {
                 zoomPanBehavior:
                     ZoomPanBehavior(enablePinching: true, enablePanning: true),
                 onChartTouchInteractionDown: (ChartTouchInteractionArgs args) {
-                  color = Colors.red;
+                  annotationColor = Colors.red;
                   annotationPosition1 = args.position;
                   CartesianChartPoint? dataPoint =
                       seriesController?.pixelToPoint(args.position);
@@ -138,9 +120,9 @@ class _MultipleAxes extends State<MultipleAxes> {
                   globalKey.currentState!.setState(() {});
                 },
                 onChartTouchInteractionUp: (ChartTouchInteractionArgs args) {
-                  color = Colors.blue;
-                  setState(() {});
-                  globalKey.currentState!.setState(() {});
+                  annotationColor = Colors.blue;
+                  // setState(() {});
+                  annotationKey.currentState!.setState(() {});
                 },
                 title: ChartTitle(
                     text: 'Sample',
@@ -233,5 +215,41 @@ class _CustomTextState extends State<CustomText> {
             Center(child: Text(pointValue2 ?? ''))
           ],
         ));
+  }
+}
+
+class CustomAnnotation extends StatefulWidget {
+  
+  final ChartData? hitPoint;
+  CustomAnnotation({Key? key, this.hitPoint}) : super(key: key);
+  @override
+  _CustomAnnotationState createState() => _CustomAnnotationState();
+}
+
+class _CustomAnnotationState extends State<CustomAnnotation> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: annotationColor,
+      width: 60,
+      height: 55,
+                      
+                      child: Column(
+                        children: [
+                          Center(
+                              child: Text("x: " +
+                                  (widget.hitPoint?.minutes.toStringAsFixed(1) ??
+                                      ""))),
+                          Center(
+                              child: Text("Y1: " +
+                                  (widget.hitPoint?.valueY1.toStringAsFixed(1) ??
+                                      ""))),
+                          Center(
+                              child: Text("Y2: " +
+                                  (widget.hitPoint?.valueY2.toStringAsFixed(1) ??
+                                      ""))),
+                        ],
+                      ),
+    );
   }
 }
